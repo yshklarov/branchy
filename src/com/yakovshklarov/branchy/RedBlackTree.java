@@ -96,7 +96,7 @@ public class RedBlackTree implements Cloneable {
         toRemove.setLeft(null);
         toRemove.setRight(null);
         toRemove.setParent(null);
-        if (toRemove == root)
+        if (toRemove == root) // TODO: fix this.
             root = replacement;
         return toRemove;
     }
@@ -150,10 +150,12 @@ public class RedBlackTree implements Cloneable {
     }
     
     public String toString(Node n, String prefix1, String prefix2) {
-        // TODO properly space non-single-character contents.
-        String output = prefix1;
+        String output;
+        String nodeStr;
+        String spacing;
+        String rightConnector;
         
-        output += ANSI_BOLD;
+        output = prefix1 + ANSI_BOLD;
         switch (n.getColor()) {
         case BLACK:
             output += ANSI_BLUE;
@@ -163,12 +165,20 @@ public class RedBlackTree implements Cloneable {
             break;
         }
         
-        output += n;
+        nodeStr = n.toString();
+        spacing = new String(new char[nodeStr.length()]).replace('\0', ' ');
+        output += nodeStr;
         output += ANSI_NORMAL;
         
         if (! n.isLeaf()) {
-            output += toString(n.getRight(), "┬", prefix2 + " |") +
-                "\n" + toString(n.getLeft(), prefix2 + " └", prefix2 + "  ");
+            if (n.getLeft() == null) // Will never happen for red-black trees.
+                rightConnector = "─";
+            else
+                rightConnector = "┬";
+            output += toString(n.getRight(), rightConnector,
+                                             prefix2 + spacing + "│") + "\n" +
+                      toString(n.getLeft(), prefix2 + spacing + "└",
+                                            prefix2 + spacing + " ");
         }
 
         return output;
