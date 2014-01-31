@@ -1,12 +1,22 @@
 package com.yakovshklarov.branchy;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
+
 public class TestBranchy {
     public static void main (String[] args) {
         System.out.println("Testing branchy....");
-        //Node n = new Node(Color.RED, 42);
-        //n.setRight(new Node(Color.BLACK, 0));
+
         System.out.print("Creating a new tree. ");
-        RedBlackTree testTree = new RedBlackTree(new Integer[]{5, 3, 1, 4, 7, 6, 8, 2});
+        
+        List<Integer> contents = new ArrayList<Integer>();
+        for (int i = 1; i <= 15; i++) {
+            contents.add(i);
+        }
+        Collections.shuffle(contents);
+        
+        RedBlackTree testTree = new RedBlackTree(contents.toArray(new Integer[0]));
         System.out.println("Displaying the tree: ");
         System.out.println(testTree);
         
@@ -19,11 +29,14 @@ public class TestBranchy {
         printArray(testTree.toArray());
         
         RedBlackTree testTreeClone = testTree.clone();
-        Integer[] toRemove = new Integer[] {7,6,1,3,8,2,4,5};
+        
+        Collections.shuffle(contents);
+        Integer[] toRemove = contents.toArray(new Integer[0]);
         
         for (Integer n: toRemove) {
             System.out.println("Removing " + n + ": ");
-            testTree.remove(n);
+            if (testTree.remove(n) == null)
+                System.out.println("ERROR: " + n + " is not in the tree!");
             System.out.println(testTree);
         }
         
@@ -31,9 +44,9 @@ public class TestBranchy {
         System.out.println(testTreeClone);
     }
     
-    private static void printArray(Integer[] arr) {
+    private static void printArray(Object[] arr) {
         System.out.print("[ ");
-        for (Integer elem: arr)
+        for (Object elem: arr)
             System.out.print(elem + " ");
         System.out.println("]");
     }
