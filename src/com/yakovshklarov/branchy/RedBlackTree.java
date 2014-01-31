@@ -6,28 +6,20 @@ import java.util.Iterator;
 import java.util.Arrays;
 
 // TODO add docstrings for everything
-// TODO specify what type to store
+// TODO use template
 // TODO this should extend a standard binary search tree...
 public class RedBlackTree implements Cloneable {
-    // If root != null then left and right should also not be null.
-    // root == null always represents a leaf (ie. a null node.)
     private Node root;
-    private Color color;
-    private RedBlackTree left;
-    private RedBlackTree right;
-    private RedBlackTree parent;
 
     private static final String ANSI_NORMAL = "\u001B[0m";
     private static final String ANSI_BOLD = "\u001B[1m";
     private static final String ANSI_BLACK = "\u001B[30m";
     private static final String ANSI_RED = "\u001B[31m";
     private static final String ANSI_BLUE = "\u001B[34m";
-
     
     public RedBlackTree() {
-        root = null;
-        parent = null;
-        color = Color.BLACK;
+        root = new Node();
+        root.setColor(Color.BLACK);
     }
     
     public RedBlackTree(Integer[] values) {
@@ -42,110 +34,101 @@ public class RedBlackTree implements Cloneable {
     public void insert(Integer value) {
         // TODO: do this the proper red-black way.
         int comp;
+        Node where, parent;
+        where = root;
         
-        if (root == null) {
-            root = new Node(value);
-            color = Color.RED;
-            left = new RedBlackTree();
-            right = new RedBlackTree();
-        } else {
-            comp = value.compareTo(root.getValue());
+        while (where.getValue() != null) {
+            comp = value.compareTo(where.getValue());
             if (comp < 0)
-                left.insert(value);
+                where = where.getLeft();
             else if (comp > 0)
-                right.insert(value);
-            // else if (comp == 0): do nothing; duplicates are not allowed.
+                where = where.getRight();
+            else if (comp == 0)
+                return;  // No duplicates allowed in our tree.
         }
-    }
-    
-    public Node remove(Integer value) {
-        Node temp;
         
-        if (root == null)
-            return null;
+        where.setValue(value);
+        where.setColor(Color.RED);
+    }
 
+    public Node remove(Integer value) {
         // TODO: do this the proper red-black way.
         int comp;
-        comp = value.compareTo(root.getValue());
-        if (comp < 0)
-            return left.remove(value);
-        else if (comp > 0)
-            return right.remove(value);
+        Node toRemove, replacement;
+        
+        toRemove = search(value);
+        if (toRemove == null) return null;
 
-        // comp == 0: we found a match
-        temp = root;
-        if (left.root != null)
-            root = left.remove(left.getRightmostNode().getValue());
-        else if (right.root != null)
-            root = right.remove(right.getLeftmostNode().getValue());
-        else
-            root = null;
+        // TODO: fix ugly.
+        if (!toRemove.getLeft().isLeaf()) {
+            replacement = toRemove.getLeft().getRightmost();
+            if (toRemove.getLeft().getRight().isLeaf())
+                replacement.getParent().setLeft(new Node());
+            else
+                replacement.getParent().setRight(new Node());
+        } else if (!toRemove.getRight().isLeaf()) {
+            replacement = toRemove.getRight().getLeftmost();
+            if (toRemove.getRight().getLeft().isLeaf())
+                replacement.getParent().setRight(new Node());
+            else
+                replacement.getParent().setLeft(new Node());
+        } else {
+            replacement = new Node(); // leaf
+        }
+        
+        if (!replacement.isLeaf()) {
+            replacement.setLeft(toRemove.getLeft());
+            replacement.setRight(toRemove.getRight());
+            replacement.getLeft().setParent(replacement);
+            replacement.getRight().setParent(replacement);
+        }
+        replacement.setParent(toRemove.getParent());
+        
+        if (toRemove.getParent() != null) {
+            comp = toRemove.getParent().compareTo(toRemove);
+            if (comp < 0) {
+                toRemove.getParent().setRight(replacement);
+            } else {
+                toRemove.getParent().setLeft(replacement);
+            }
+        }
 
-        return temp;
-    }
-    
-    private Node getRightmostNode() {
-        if (right == null || right.root == null) return root;
-        return right.getRightmostNode();
-    }
-    private Node getLeftmostNode() {
-        if (left == null || left.root == null) return root;
-        return left.getLeftmostNode();
+        toRemove.setLeft(null);
+        toRemove.setRight(null);
+        toRemove.setParent(null);
+        if (toRemove == root)
+            root = replacement;
+        return toRemove;
     }
     
     public Node search(Integer value) {
-        int comp = value.compareTo(root.getValue());
-        if (comp == 0) {
-            return root;
-        } else if (comp < 0) {
-            if (left == null) return null;
-            return left.search(value);
-        } else {  // comp > 0
-            if (right == null) return null;
-            return right.search(value);
+        int comp;
+        Node where = root;
+        
+        while (!where.isLeaf()) {
+            comp = value.compareTo(where.getValue());
+            if (comp < 0)
+                where = where.getLeft();
+            else if (comp > 0)
+                where = where.getRight();
+            else if (comp == 0) {  // found a match
+                return where;
+            }
         }
+        
+        return null;  // No match.
     }
 
     public int size() {
-        int count;
-        
-        if (root == null) return 0;
-        
-        count = 1;
-        if (left != null)  count +=  left.size();
-        if (right != null) count += right.size();
-        return count;
+        return root.size();
     }
     
     public Integer[] toArray() {
-        ArrayList<Integer> list = new ArrayList<>();
-        Integer[] array;
-        Iterator<Integer> iter;
-
-        if (left != null) list.addAll(Arrays.asList(left.toArray()));
-        if (root != null) list.add(root.getValue());
-        if (right != null) list.addAll(Arrays.asList(right.toArray()));
-        
-        array = new Integer[list.size()];
-        iter = list.iterator();
-        
-        for (int i = 0; i < list.size(); i++) {
-            array[i] = iter.next();
-        }
-        
-        return array;
+        return root.toArray();
     }
     
-    
-    public void setRight(RedBlackTree t) { right = t; }
-    public void setLeft(RedBlackTree t) { left = t; }
-
-    public RedBlackTree getRight() { return right; }
-    public RedBlackTree getLeft() { return left; }
-
-    
     public RedBlackTree clone() {
-        // Inefficient. TODO: clone more efficiently.
+        // TODO: clone properly, preserving structure.
         return new RedBlackTree(toArray());
     }
     
@@ -155,30 +138,38 @@ public class RedBlackTree implements Cloneable {
         if (otherOb == null) return false;
         if (getClass() != otherOb.getClass()) return false;
         RedBlackTree other = (RedBlackTree) otherOb;
-        return color == other.color && root == other.root &&
-            Objects.equals(left, other.left) && Objects.equals(right, other.right);
+        return Objects.equals(root, other.root);
     }
     
     public int hashCode() {
-        return Objects.hash(root, color, left, right);
+        return Objects.hash(root);
     }
     
     public String toString() {
-        // TODO make it display an actual, colorful tree
-        String output = "Tree[";
-        output += ANSI_BOLD;
-        if (color == Color.BLACK)
-            output += ANSI_BLUE;
-        else if (color == Color.RED)
-            output += ANSI_RED;
+        return "Tree " + toString(root, "", "     ");
+    }
+    
+    public String toString(Node n, String prefix1, String prefix2) {
+        // TODO properly space non-single-character contents.
+        String output = prefix1;
         
-        output += root;
+        output += ANSI_BOLD;
+        switch (n.getColor()) {
+        case BLACK:
+            output += ANSI_BLUE;
+            break;
+        case RED:
+            output += ANSI_RED;
+            break;
+        }
+        
+        output += n;
         output += ANSI_NORMAL;
         
-        if (root != null)
-            output += ", left: " + left + ", right: " + right;
-
-        output += "]";
+        if (! n.isLeaf()) {
+            output += toString(n.getRight(), "┬", prefix2 + " |") +
+                "\n" + toString(n.getLeft(), prefix2 + " └", prefix2 + "  ");
+        }
 
         return output;
     }

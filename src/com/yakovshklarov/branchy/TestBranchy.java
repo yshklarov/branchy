@@ -18,17 +18,17 @@ public class TestBranchy {
         System.out.print("Converting to array: ");
         printArray(testTree.toArray());
         
-        RedBlackTree origTestTree = testTree.clone();
+        RedBlackTree testTreeClone = testTree.clone();
         Integer[] toRemove = new Integer[] {7,6,1,3,8,2,4,5};
         
         for (Integer n: toRemove) {
+            System.out.println("Removing " + n + ": ");
             testTree.remove(n);
-            System.out.print("Removing " + n + ": ");
-            printArray(testTree.toArray());
+            System.out.println(testTree);
         }
         
-        System.out.print("Original tree's array (from cloned): ");
-        printArray(origTestTree.toArray());
+        System.out.println("Original (cloned) tree: ");
+        System.out.println(testTreeClone);
     }
     
     private static void printArray(Integer[] arr) {
