@@ -36,7 +36,9 @@ public class TestBranchy {
         for (Integer n: toRemove) {
             System.out.println("Removing " + n + ": ");
             if (testTree.remove(n) == null)
-                System.out.println("ERROR: " + n + " is not in the tree!");
+                System.err.println("ERROR: " + n + " is not in the tree!");
+            if (!testTree.verify())
+                System.err.println("ERROR: corrupt tree.");
             System.out.println(testTree);
         }
         

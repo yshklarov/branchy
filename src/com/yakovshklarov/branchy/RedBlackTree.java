@@ -50,54 +50,65 @@ public class RedBlackTree implements Cloneable {
         where.setValue(value);
         where.setColor(Color.RED);
     }
-
+    
     public Node remove(Integer value) {
         // TODO: do this the proper red-black way.
+        // TODO: fix ugly.
         int comp;
-        Node toRemove, replacement;
+        Node toRemove, replacement, oldLeft, oldRight, oldParent;
         
         toRemove = search(value);
         if (toRemove == null) return null;
-
-        // TODO: fix ugly.
+        
+        oldLeft = toRemove.getLeft();
+        oldRight = toRemove.getRight();
+        oldParent = toRemove.getParent();
+        
         if (!toRemove.getLeft().isLeaf()) {
             replacement = toRemove.getLeft().getRightmost();
-            if (toRemove.getLeft().getRight().isLeaf())
-                replacement.getParent().setLeft(new Node());
-            else
-                replacement.getParent().setRight(new Node());
+            if (replacement == toRemove.getLeft()) {
+                oldLeft = replacement.getLeft();
+            } else {
+                replacement.getParent().setRight(replacement.getLeft());
+                replacement.getLeft().setParent(replacement.getParent());
+            }
         } else if (!toRemove.getRight().isLeaf()) {
             replacement = toRemove.getRight().getLeftmost();
-            if (toRemove.getRight().getLeft().isLeaf())
-                replacement.getParent().setRight(new Node());
-            else
-                replacement.getParent().setLeft(new Node());
+            if (replacement == toRemove.getRight()) {
+                oldRight = replacement.getRight();
+            } else {
+                replacement.getParent().setLeft(replacement.getRight());
+                replacement.getRight().setParent(replacement.getParent());
+            }
         } else {
             replacement = new Node(); // leaf
         }
         
         if (!replacement.isLeaf()) {
-            replacement.setLeft(toRemove.getLeft());
-            replacement.setRight(toRemove.getRight());
-            replacement.getLeft().setParent(replacement);
-            replacement.getRight().setParent(replacement);
+            replacement.setLeft(oldLeft);
+            replacement.setRight(oldRight);
+            oldLeft.setParent(replacement);
+            oldRight.setParent(replacement);
         }
-        replacement.setParent(toRemove.getParent());
         
-        if (toRemove.getParent() != null) {
-            comp = toRemove.getParent().compareTo(toRemove);
+        if (oldParent != null) {
+            replacement.setParent(oldParent);
+            comp = oldParent.compareTo(toRemove);
             if (comp < 0) {
-                toRemove.getParent().setRight(replacement);
+                oldParent.setRight(replacement);
             } else {
-                toRemove.getParent().setLeft(replacement);
+                oldParent.setLeft(replacement);
             }
         }
-
+        
         toRemove.setLeft(null);
         toRemove.setRight(null);
         toRemove.setParent(null);
-        if (toRemove == root) // TODO: fix this.
+        if (toRemove == root) {
             root = replacement;
+            root.setParent(null);
+        }
+        
         return toRemove;
     }
     
@@ -132,6 +143,18 @@ public class RedBlackTree implements Cloneable {
         return new RedBlackTree(toArray());
     }
     
+    public boolean verify() {
+        return root.getParent() == null && verify(root);
+    }
+    
+    private boolean verify(Node n) {
+        if (n.isLeaf()) return true;
+        if (!n.getLeft().isLeaf())
+            return n == n.getLeft().getParent() && verify(n.getLeft());
+        if (!n.getRight().isLeaf())
+            return n == n.getRight().getParent() && verify(n.getRight());
+        return true;
+    }
     
     public boolean equals(Object otherOb) {
         if (this == otherOb) return true;
