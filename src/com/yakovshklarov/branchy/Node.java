@@ -73,28 +73,6 @@ public class Node implements Comparable<Node> {
         return 1 + left.size() + right.size();
     }
     
-    public Integer[] toArray() {
-        ArrayList<Integer> list = new ArrayList<>();
-        Integer[] array;
-        Iterator<Integer> iter;
-
-        if (left != null && !left.isLeaf())
-            list.addAll(Arrays.asList(left.toArray()));
-        if (!isLeaf())
-            list.add(value);
-        if (right != null && !right.isLeaf())
-            list.addAll(Arrays.asList(right.toArray()));
-        
-        array = new Integer[list.size()];
-        iter = list.iterator();
-        
-        for (int i = 0; i < list.size(); i++) {
-            array[i] = iter.next();
-        }
-        
-        return array;
-    }
-    
     public int compareTo (Node other) {
         return Integer.compare(value, other.value);
     }

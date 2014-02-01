@@ -135,12 +135,35 @@ public class RedBlackTree implements Cloneable {
     }
     
     public Integer[] toArray() {
-        return root.toArray();
+        return toArray(root, false);
+    }
+    
+    private Integer[] toArray(Node n, boolean cloningOrder) {
+        ArrayList<Integer> list = new ArrayList<>();
+        Integer[] array;
+        Iterator<Integer> iter;
+
+        if (!n.isLeaf()) {
+            if (cloningOrder) list.add(n.getValue());
+            if (!n.getLeft().isLeaf())
+                list.addAll(Arrays.asList(toArray(n.getLeft(), cloningOrder)));
+            if (!cloningOrder) list.add(n.getValue());
+            if (!n.getRight().isLeaf())
+                list.addAll(Arrays.asList(toArray(n.getRight(), cloningOrder)));
+        }
+        
+        array = new Integer[list.size()];
+        iter = list.iterator();
+        
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = iter.next();
+        }
+        
+        return array;
     }
     
     public RedBlackTree clone() {
-        // TODO: clone properly, preserving structure.
-        return new RedBlackTree(toArray());
+        return new RedBlackTree(toArray(root, true));
     }
     
     public boolean verify() {
