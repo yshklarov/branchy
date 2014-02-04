@@ -19,7 +19,6 @@ public class RedBlackTree implements Cloneable {
     
     public RedBlackTree() {
         root = new Node();
-        root.setColor(Color.BLACK);
     }
     
     public RedBlackTree(Integer[] values) {
@@ -32,12 +31,12 @@ public class RedBlackTree implements Cloneable {
     }
     
     public void insert(Integer value) {
-        // TODO: do this the proper red-black way.
         int comp;
         Node where, parent;
         where = root;
         
-        while (where.getValue() != null) {
+        // Replace one of the leaves with the node.
+        while (!where.isLeaf()) {
             comp = value.compareTo(where.getValue());
             if (comp < 0)
                 where = where.getLeft();
@@ -46,9 +45,101 @@ public class RedBlackTree implements Cloneable {
             else if (comp == 0)
                 return;  // No duplicates allowed in our tree.
         }
-        
         where.setValue(value);
         where.setColor(Color.RED);
+        
+        // Adjust the tree to remain red-black.
+        insertCase1(where);
+    }
+    
+    private void insertCase1(Node n) {
+        if (n == root)
+            n.setColor(Color.BLACK);
+        else
+            insertCase2(n);
+    }
+    
+    private void insertCase2(Node n) {
+        if (n.getParent().getColor() == Color.BLACK)
+            return;
+        else
+            insertCase3(n);
+    }
+    
+    private void insertCase3(Node n) {
+        Node u, g;
+        u = n.getUncle();
+        
+        if (u != null && u.getColor() == Color.RED) {
+            n.getParent().setColor(Color.BLACK);
+            u.setColor(Color.BLACK);
+            g = n.getGrandparent();
+            g.setColor(Color.RED);
+            insertCase1(g);
+        } else {
+            insertCase4(n);
+        }
+    }
+    
+    private void insertCase4(Node n) {
+        Node g = n.getGrandparent();
+        
+        if (n == n.getParent().getRight() && n.getParent() == g.getLeft()) {
+            rotateLeft(n.getParent());
+            n = n.getLeft();
+        } else if (n == n.getParent().getLeft() && n.getParent() == g.getRight()) {
+            rotateRight(n.getParent());
+            n = n.getRight();
+        }
+        
+        insertCase5(n);
+    }
+
+    private void insertCase5(Node n) {
+        Node g = n.getGrandparent();
+        n.getParent().setColor(Color.BLACK);
+        g.setColor(Color.RED);
+        if (n == n.getParent().getLeft()) {
+            rotateRight(g);
+        } else {
+            rotateLeft(g);
+        }
+    }
+    
+    private void rotateLeft(Node n) {
+        Node pivot, oldP;
+        pivot = n.getRight();
+        oldP = n.getParent();
+        
+        n.setRight(pivot.getLeft());
+        pivot.setLeft(n);
+        if (oldP != null) {
+            if (oldP.getLeft() == n)
+                oldP.setLeft(pivot);
+            else if (oldP.getRight() == n)
+                oldP.setRight(pivot);
+        } else { // n was the root node
+            root = pivot;
+            root.setParent(null);
+        }
+    }
+    
+    private void rotateRight(Node n){
+        Node pivot, oldP;
+        pivot = n.getLeft();
+        oldP = n.getParent();
+        
+        n.setLeft(pivot.getRight());
+        pivot.setRight(n);
+        if (oldP != null) {
+            if (oldP.getLeft() == n)
+                oldP.setLeft(pivot);
+            else if (oldP.getRight() == n)
+                oldP.setRight(pivot);
+        } else { // n was the root node
+            root = pivot;
+            root.setParent(null);
+        }
     }
     
     public Node remove(Integer value) {
@@ -70,7 +161,6 @@ public class RedBlackTree implements Cloneable {
                 oldLeft = replacement.getLeft();
             } else {
                 replacement.getParent().setRight(replacement.getLeft());
-                replacement.getLeft().setParent(replacement.getParent());
             }
         } else if (!toRemove.getRight().isLeaf()) {
             replacement = toRemove.getRight().getLeftmost();
@@ -78,7 +168,6 @@ public class RedBlackTree implements Cloneable {
                 oldRight = replacement.getRight();
             } else {
                 replacement.getParent().setLeft(replacement.getRight());
-                replacement.getRight().setParent(replacement.getParent());
             }
         } else {
             replacement = new Node(); // leaf
@@ -87,8 +176,6 @@ public class RedBlackTree implements Cloneable {
         if (!replacement.isLeaf()) {
             replacement.setLeft(oldLeft);
             replacement.setRight(oldRight);
-            oldLeft.setParent(replacement);
-            oldRight.setParent(replacement);
         }
         
         if (oldParent != null) {

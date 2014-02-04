@@ -11,7 +11,7 @@ public class TestBranchy {
         System.out.print("Creating a new tree. ");
         
         List<Integer> contents = new ArrayList<Integer>();
-        for (int i = 1; i <= 15; i++) {
+        for (int i = 1; i <= 30; i++) {
             contents.add(i);
         }
         Collections.shuffle(contents);
@@ -28,7 +28,7 @@ public class TestBranchy {
         System.out.print("Converting to array: ");
         printArray(testTree.toArray());
         
-        RedBlackTree testTreeClone = testTree.clone();
+        /*RedBlackTree testTreeClone = testTree.clone();
         
         Collections.shuffle(contents);
         Integer[] toRemove = contents.toArray(new Integer[0]);
@@ -43,7 +43,7 @@ public class TestBranchy {
         }
         
         System.out.println("Original (cloned) tree: ");
-        System.out.println(testTreeClone);
+        System.out.println(testTreeClone);*/
     }
     
     private static void printArray(Object[] arr) {

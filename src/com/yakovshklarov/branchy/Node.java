@@ -16,23 +16,32 @@ public class Node implements Comparable<Node> {
     private Node right;
     private Node parent;
     
+    // Create a new orphan leaf.
     public Node() {
         this(null, null);
     }
     
+    // Create a new orphan node with two child leaves.
     public Node(Integer value) {
         this(value, null);
     }
-
+    
+    // Create a new child leaf.
     public Node(Node parent) {
         this(null, parent);
     }
     
+    // Create a new black child node, making leaf children if necessary.
     public Node(Integer value, Node parent) {
         this.value = value;
         this.parent = parent;
-        left = null;
-        right = null;
+        if (value != null) {
+            left = new Node();
+            right = new Node();
+        } else {
+            left = null;
+            right = null;
+        }
         color = Color.BLACK;
     }        
     
@@ -43,15 +52,47 @@ public class Node implements Comparable<Node> {
     public Integer getValue() { return value;  }
 
     public void setColor(Color color)   { this.color  = color;  }
-    public void setLeft(Node left)      { this.left   = left;   }
-    public void setRight(Node right)    { this.right  = right;  }
+    public void setLeft(Node left) {
+        this.left = left;
+        if (left != null)
+            left.setParent(this);
+    }
+    public void setRight(Node right) {
+        this.right = right;
+        if (right != null)
+            right.setParent(this);
+    }
     public void setParent(Node parent)  { this.parent = parent; }
+    // Set this node's value, creating leaf children if necessary.
+    // If value is null, turn the node into a leaf, deleting any children.
     public void setValue(Integer value) {
         this.value  = value;
-        if (value != null) {
+        if (value == null) {
+            left = null;
+            right = null;
+            setColor(Color.BLACK);
+        } else {
             if (left == null) left = new Node(this);
             if (right == null) right = new Node(this);
         }
+    }
+    
+    public Node getUncle() {
+        Node g = getGrandparent();
+        if (g != null) {
+            if (parent == g.left)
+                return g.right;
+            else
+                return g.left;
+        }
+        return null;
+    }
+
+    public Node getGrandparent() {
+        if (parent != null)
+            return parent.parent;
+        else
+            return null;
     }
     
     public boolean isLeaf() {
@@ -76,7 +117,7 @@ public class Node implements Comparable<Node> {
     public int compareTo (Node other) {
         return Integer.compare(value, other.value);
     }
-
+    
     
     public boolean equals(Object otherOb) {
         if (this == otherOb) return true;

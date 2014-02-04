@@ -1,7 +1,7 @@
 # branchy
 
 A Java implementation of red-black trees.
-Please note: it's still incomplete! We have a binary search tree, but it's not red-black yet.
+Please note: it's still incomplete! The node-removal code does not work yet.
 
 To build:
 
