@@ -11,7 +11,7 @@ public class TestBranchy {
         System.out.print("Creating a new tree. ");
         
         List<Integer> contents = new ArrayList<Integer>();
-        for (int i = 1; i <= 30; i++) {
+        for (int i = 1; i <= 20; i++) {
             contents.add(i);
         }
         Collections.shuffle(contents);
@@ -25,25 +25,23 @@ public class TestBranchy {
         if (size != 1) System.out.printf("s");
         System.out.println(".");
         
-        System.out.print("Converting to array: ");
-        printArray(testTree.toArray());
-        
-        /*RedBlackTree testTreeClone = testTree.clone();
+        System.out.printf("Converting to array. Array has %d elements.\n",
+                         testTree.toArray().length);
         
         Collections.shuffle(contents);
         Integer[] toRemove = contents.toArray(new Integer[0]);
         
         for (Integer n: toRemove) {
             System.out.println("Removing " + n + ": ");
-            if (testTree.remove(n) == null)
+            Node nNode = testTree.search(n);
+            if (nNode == null)
                 System.err.println("ERROR: " + n + " is not in the tree!");
+            else
+                testTree.remove(nNode);
             if (!testTree.verify())
                 System.err.println("ERROR: corrupt tree.");
             System.out.println(testTree);
         }
-        
-        System.out.println("Original (cloned) tree: ");
-        System.out.println(testTreeClone);*/
     }
     
     private static void printArray(Object[] arr) {

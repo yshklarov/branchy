@@ -8,7 +8,7 @@ import java.util.Arrays;
 // TODO add docstrings for everything
 // TODO use template
 // TODO this should extend a standard binary search tree...
-public class RedBlackTree implements Cloneable {
+public class RedBlackTree {
     private Node root;
 
     private static final String ANSI_NORMAL = "\u001B[0m";
@@ -46,7 +46,7 @@ public class RedBlackTree implements Cloneable {
                 return;  // No duplicates allowed in our tree.
         }
         where.setValue(value);
-        where.setColor(Color.RED);
+        where.makeRed();
         
         // Adjust the tree to remain red-black.
         insertCase1(where);
@@ -54,13 +54,13 @@ public class RedBlackTree implements Cloneable {
     
     private void insertCase1(Node n) {
         if (n == root)
-            n.setColor(Color.BLACK);
+            n.makeBlack();
         else
             insertCase2(n);
     }
     
     private void insertCase2(Node n) {
-        if (n.getParent().getColor() == Color.BLACK)
+        if (n.getParent().isBlack())
             return;
         else
             insertCase3(n);
@@ -70,11 +70,11 @@ public class RedBlackTree implements Cloneable {
         Node u, g;
         u = n.getUncle();
         
-        if (u != null && u.getColor() == Color.RED) {
-            n.getParent().setColor(Color.BLACK);
-            u.setColor(Color.BLACK);
+        if (u != null && u.isRed()) {
+            n.getParent().makeBlack();
+            u.makeBlack();
             g = n.getGrandparent();
-            g.setColor(Color.RED);
+            g.makeRed();
             insertCase1(g);
         } else {
             insertCase4(n);
@@ -97,8 +97,8 @@ public class RedBlackTree implements Cloneable {
 
     private void insertCase5(Node n) {
         Node g = n.getGrandparent();
-        n.getParent().setColor(Color.BLACK);
-        g.setColor(Color.RED);
+        n.getParent().makeBlack();
+        g.makeRed();
         if (n == n.getParent().getLeft()) {
             rotateRight(g);
         } else {
@@ -142,61 +142,128 @@ public class RedBlackTree implements Cloneable {
         }
     }
     
-    public Node remove(Integer value) {
-        // TODO: do this the proper red-black way.
-        // TODO: fix ugly.
-        int comp;
-        Node toRemove, replacement, oldLeft, oldRight, oldParent;
+    public void remove(Node n) {
+        Node l, r, p, toRemove;
         
-        toRemove = search(value);
-        if (toRemove == null) return null;
+        if (n == null) return;
+
+        l = n.getLeft();
+        r = n.getRight();
+        p = n.getParent();
         
-        oldLeft = toRemove.getLeft();
-        oldRight = toRemove.getRight();
-        oldParent = toRemove.getParent();
-        
-        if (!toRemove.getLeft().isLeaf()) {
-            replacement = toRemove.getLeft().getRightmost();
-            if (replacement == toRemove.getLeft()) {
-                oldLeft = replacement.getLeft();
-            } else {
-                replacement.getParent().setRight(replacement.getLeft());
-            }
-        } else if (!toRemove.getRight().isLeaf()) {
-            replacement = toRemove.getRight().getLeftmost();
-            if (replacement == toRemove.getRight()) {
-                oldRight = replacement.getRight();
-            } else {
-                replacement.getParent().setLeft(replacement.getRight());
-            }
+        if (!l.isLeaf() && !r.isLeaf()) {
+            toRemove = l.getRightmost();
+            n.setValue(toRemove.getValue());
+            removeOneChild(toRemove);
         } else {
-            replacement = new Node(); // leaf
+            removeOneChild(n);
         }
+    }
+    
+    // Call if n has no more than one non-leaf child.
+    private void removeOneChild(Node n) {
+        Node c;
+        if (n.getRight().isLeaf())
+            c = n.getLeft();
+        else
+            c = n.getRight();
         
-        if (!replacement.isLeaf()) {
-            replacement.setLeft(oldLeft);
-            replacement.setRight(oldRight);
+        replaceWithChild(n, c);
+        if (n.isBlack()) {
+            if (c.isRed())
+                c.makeBlack();
+            else
+                removeCase1(c);
         }
-        
-        if (oldParent != null) {
-            replacement.setParent(oldParent);
-            comp = oldParent.compareTo(toRemove);
-            if (comp < 0) {
-                oldParent.setRight(replacement);
-            } else {
-                oldParent.setLeft(replacement);
-            }
+    }
+    
+    private void removeCase1(Node n) {
+        if (n != root)
+            removeCase2(n);
+    }
+
+    private void removeCase2(Node n) {
+        Node s = n.getSibling();
+        Node p = n.getParent();
+ 
+        if (s.isRed()) {
+            p.makeRed();
+            s.makeBlack();
+            if (n.isLeftChild())
+                rotateLeft(p);
+            else
+                rotateRight(p);
         }
+        removeCase3(n);
+    }
+
+    private void removeCase3(Node n) {
+        Node s = n.getSibling();
+        Node p = n.getParent();
         
-        toRemove.setLeft(null);
-        toRemove.setRight(null);
-        toRemove.setParent(null);
-        if (toRemove == root) {
-            root = replacement;
-            root.setParent(null);
+        if (p.isBlack() && s.isBlack() &&
+            s.getLeft().isBlack() && s.getRight().isBlack()) {
+            s.makeRed();
+            removeCase1(p);
+        } else {
+            removeCase4(n);
         }
+    }
+    
+    private void removeCase4(Node n) {
+        Node s = n.getSibling();
+        Node p = n.getParent();
         
-        return toRemove;
+        if (p.isRed() && s.isBlack() &&
+            s.getLeft().isBlack() && s.getRight().isBlack()) {
+            s.makeRed();
+            p.makeBlack();
+        } else {
+            removeCase5(n);
+        }
+    }
+
+    private void removeCase5(Node n) {
+        Node s = n.getSibling();
+        Node p = n.getParent();
+        
+        if (n.isLeftChild() && s.getRight().isBlack()) {
+            s.makeRed();
+            s.getLeft().makeBlack();
+            rotateRight(s);
+        } else if (n.isRightChild() && s.getLeft().isBlack()) {
+            s.makeRed();
+            s.getRight().makeBlack();
+            rotateLeft(s);
+        }
+        removeCase6(n);
+    }
+
+    private void removeCase6(Node n) {
+        Node s = n.getSibling();
+        Node p = n.getParent();
+        
+        s.setColor(p.getColor());
+        p.makeBlack();
+ 
+        if (n.isLeftChild()) {
+            s.getRight().makeBlack();
+            rotateLeft(p);
+        } else {
+            s.getLeft().makeBlack();
+            rotateRight(p);
+        }
+    }
+    
+    private void replaceWithChild(Node n, Node c) {
+        if (n.isRightChild()) {
+            n.getParent().setRight(c);
+        } else if (n.isLeftChild()) {
+            n.getParent().setLeft(c);
+        } else {  // (n == root)
+            c.setParent(null);
+            root = c;
+        }
     }
     
     public Node search(Integer value) {
@@ -222,21 +289,20 @@ public class RedBlackTree implements Cloneable {
     }
     
     public Integer[] toArray() {
-        return toArray(root, false);
+        return toArray(root);
     }
     
-    private Integer[] toArray(Node n, boolean cloningOrder) {
+    private Integer[] toArray(Node n) {
         ArrayList<Integer> list = new ArrayList<>();
         Integer[] array;
         Iterator<Integer> iter;
 
         if (!n.isLeaf()) {
-            if (cloningOrder) list.add(n.getValue());
             if (!n.getLeft().isLeaf())
-                list.addAll(Arrays.asList(toArray(n.getLeft(), cloningOrder)));
-            if (!cloningOrder) list.add(n.getValue());
+                list.addAll(Arrays.asList(toArray(n.getLeft())));
+            list.add(n.getValue());
             if (!n.getRight().isLeaf())
-                list.addAll(Arrays.asList(toArray(n.getRight(), cloningOrder)));
+                list.addAll(Arrays.asList(toArray(n.getRight())));
         }
         
         array = new Integer[list.size()];
@@ -249,21 +315,38 @@ public class RedBlackTree implements Cloneable {
         return array;
     }
     
-    public RedBlackTree clone() {
-        return new RedBlackTree(toArray(root, true));
-    }
-    
+    // Return true if the tree's structure obeys the red-black rules and all
+    // parent-child links are sane..
     public boolean verify() {
-        return root.getParent() == null && verify(root);
+        return (root.getParent() == null)
+            &&  root.isBlack() // Rule 2
+            && (verify(root) >= 0);  // Check rules 1,3,4,5
     }
     
-    private boolean verify(Node n) {
-        if (n.isLeaf()) return true;
-        if (!n.getLeft().isLeaf())
-            return n == n.getLeft().getParent() && verify(n.getLeft());
-        if (!n.getRight().isLeaf())
-            return n == n.getRight().getParent() && verify(n.getRight());
-        return true;
+    // Returns -1 if tree is corrupt, otherwise returns the number of black
+    // nodes in the path from n to any of its descendant leaves (inclusive).
+    private int verify(Node n) {
+        Node l, r;
+        int lBlacks, rBlacks;
+        
+        if (n.isLeaf()) return n.isBlack() ? 1 : -1; // Rule 3
+        
+        l = n.getLeft();
+        r = n.getRight();
+        
+        if (n.getColor() == null) return -1; // Rule 1
+        
+        if (n.isRed() && (l.isRed() || r.isRed())) return -1; // Rule 4
+        
+        // Check links
+        if (n != l.getParent() || n != r.getParent()) return -1;
+        
+        lBlacks = verify(l);
+        if (lBlacks == -1) return -1;
+        rBlacks = verify(r);
+        if (lBlacks != rBlacks) return -1;
+        
+        return lBlacks + (n.isBlack() ? 1 : 0);
     }
     
     public boolean equals(Object otherOb) {
@@ -289,14 +372,7 @@ public class RedBlackTree implements Cloneable {
         String rightConnector;
         
         output = prefix1 + ANSI_BOLD;
-        switch (n.getColor()) {
-        case BLACK:
-            output += ANSI_BLUE;
-            break;
-        case RED:
-            output += ANSI_RED;
-            break;
-        }
+        if (n.isRed()) output += ANSI_RED;
         
         nodeStr = n.toString();
         spacing = new String(new char[nodeStr.length()]).replace('\0', ' ');

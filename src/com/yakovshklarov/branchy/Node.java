@@ -42,7 +42,7 @@ public class Node implements Comparable<Node> {
             left = null;
             right = null;
         }
-        color = Color.BLACK;
+        color = Color.BLACK;  // By default
     }        
     
     public Color getColor()   { return color;  }
@@ -77,6 +77,14 @@ public class Node implements Comparable<Node> {
         }
     }
     
+    public void makeBlack() {
+        color = Color.BLACK;
+    }
+
+    public void makeRed() {
+        color = Color.RED;
+    }
+    
     public Node getUncle() {
         Node g = getGrandparent();
         if (g != null) {
@@ -95,8 +103,33 @@ public class Node implements Comparable<Node> {
             return null;
     }
     
+    public Node getSibling() {
+        if (parent == null)
+            return null;
+        if (this == parent.left)
+            return parent.right;
+        else
+            return parent.left;
+    }
+    
     public boolean isLeaf() {
         return value == null;
+    }
+    
+    public boolean isLeftChild() {
+        return parent != null && this == parent.left;
+    }
+
+    public boolean isRightChild() {
+        return parent != null && this == parent.right;
+    }
+    
+    public boolean isRed() {
+        return color == Color.RED;
+    }
+
+    public boolean isBlack() {
+        return color == Color.BLACK;
     }
     
     public Node getRightmost() {
