@@ -6,10 +6,9 @@ import java.util.Iterator;
 import java.util.Arrays;
 
 // TODO add docstrings for everything
-// TODO use template
 // TODO this should extend a standard binary search tree...
-public class RedBlackTree {
-    private Node root;
+public class RedBlackTree <T extends Comparable<T>> {
+    private Node<T> root;
 
     private static final String ANSI_NORMAL = "\u001B[0m";
     private static final String ANSI_BOLD = "\u001B[1m";
@@ -18,21 +17,21 @@ public class RedBlackTree {
     private static final String ANSI_BLUE = "\u001B[34m";
     
     public RedBlackTree() {
-        root = new Node();
+        root = new Node<T>();
     }
     
-    public RedBlackTree(Integer[] values) {
+    public RedBlackTree(T[] values) {
         this();
         insert(values);
     }
     
-    public void insert(Integer[] values) {
-        for (int v: values) insert(v);
+    public void insert(T[] values) {
+        for (T v: values) insert(v);
     }
     
-    public void insert(Integer value) {
+    public void insert(T value) {
         int comp;
-        Node where, parent;
+        Node<T> where, parent;
         where = root;
         
         // Replace one of the leaves with the node.
@@ -52,22 +51,22 @@ public class RedBlackTree {
         insertCase1(where);
     }
     
-    private void insertCase1(Node n) {
+    private void insertCase1(Node<T> n) {
         if (n == root)
             n.makeBlack();
         else
             insertCase2(n);
     }
     
-    private void insertCase2(Node n) {
+    private void insertCase2(Node<T> n) {
         if (n.getParent().isBlack())
             return;
         else
             insertCase3(n);
     }
     
-    private void insertCase3(Node n) {
-        Node u, g;
+    private void insertCase3(Node<T> n) {
+        Node<T> u, g;
         u = n.getUncle();
         
         if (u != null && u.isRed()) {
@@ -81,8 +80,8 @@ public class RedBlackTree {
         }
     }
     
-    private void insertCase4(Node n) {
-        Node g = n.getGrandparent();
+    private void insertCase4(Node<T> n) {
+        Node<T> g = n.getGrandparent();
         
         if (n == n.getParent().getRight() && n.getParent() == g.getLeft()) {
             rotateLeft(n.getParent());
@@ -95,8 +94,8 @@ public class RedBlackTree {
         insertCase5(n);
     }
 
-    private void insertCase5(Node n) {
-        Node g = n.getGrandparent();
+    private void insertCase5(Node<T> n) {
+        Node<T> g = n.getGrandparent();
         n.getParent().makeBlack();
         g.makeRed();
         if (n == n.getParent().getLeft()) {
@@ -106,8 +105,8 @@ public class RedBlackTree {
         }
     }
     
-    private void rotateLeft(Node n) {
-        Node pivot, oldP;
+    private void rotateLeft(Node<T> n) {
+        Node<T> pivot, oldP;
         pivot = n.getRight();
         oldP = n.getParent();
         
@@ -124,8 +123,8 @@ public class RedBlackTree {
         }
     }
     
-    private void rotateRight(Node n){
-        Node pivot, oldP;
+    private void rotateRight(Node<T> n){
+        Node<T> pivot, oldP;
         pivot = n.getLeft();
         oldP = n.getParent();
         
@@ -142,8 +141,8 @@ public class RedBlackTree {
         }
     }
     
-    public void remove(Node n) {
-        Node l, r, p, toRemove;
+    public void remove(Node<T> n) {
+        Node<T> l, r, p, toRemove;
         
         if (n == null) return;
 
@@ -161,8 +160,8 @@ public class RedBlackTree {
     }
     
     // Call if n has no more than one non-leaf child.
-    private void removeOneChild(Node n) {
-        Node c;
+    private void removeOneChild(Node<T> n) {
+        Node<T> c;
         if (n.getRight().isLeaf())
             c = n.getLeft();
         else
@@ -177,14 +176,14 @@ public class RedBlackTree {
         }
     }
     
-    private void removeCase1(Node n) {
+    private void removeCase1(Node<T> n) {
         if (n != root)
             removeCase2(n);
     }
 
-    private void removeCase2(Node n) {
-        Node s = n.getSibling();
-        Node p = n.getParent();
+    private void removeCase2(Node<T> n) {
+        Node<T> s = n.getSibling();
+        Node<T> p = n.getParent();
  
         if (s.isRed()) {
             p.makeRed();
@@ -197,9 +196,9 @@ public class RedBlackTree {
         removeCase3(n);
     }
 
-    private void removeCase3(Node n) {
-        Node s = n.getSibling();
-        Node p = n.getParent();
+    private void removeCase3(Node<T> n) {
+        Node<T> s = n.getSibling();
+        Node<T> p = n.getParent();
         
         if (p.isBlack() && s.isBlack() &&
             s.getLeft().isBlack() && s.getRight().isBlack()) {
@@ -210,9 +209,9 @@ public class RedBlackTree {
         }
     }
     
-    private void removeCase4(Node n) {
-        Node s = n.getSibling();
-        Node p = n.getParent();
+    private void removeCase4(Node<T> n) {
+        Node<T> s = n.getSibling();
+        Node<T> p = n.getParent();
         
         if (p.isRed() && s.isBlack() &&
             s.getLeft().isBlack() && s.getRight().isBlack()) {
@@ -223,9 +222,9 @@ public class RedBlackTree {
         }
     }
 
-    private void removeCase5(Node n) {
-        Node s = n.getSibling();
-        Node p = n.getParent();
+    private void removeCase5(Node<T> n) {
+        Node<T> s = n.getSibling();
+        Node<T> p = n.getParent();
         
         if (n.isLeftChild() && s.getRight().isBlack()) {
             s.makeRed();
@@ -239,9 +238,9 @@ public class RedBlackTree {
         removeCase6(n);
     }
 
-    private void removeCase6(Node n) {
-        Node s = n.getSibling();
-        Node p = n.getParent();
+    private void removeCase6(Node<T> n) {
+        Node<T> s = n.getSibling();
+        Node<T> p = n.getParent();
         
         s.setColor(p.getColor());
         p.makeBlack();
@@ -255,7 +254,7 @@ public class RedBlackTree {
         }
     }
     
-    private void replaceWithChild(Node n, Node c) {
+    private void replaceWithChild(Node<T> n, Node<T> c) {
         if (n.isRightChild()) {
             n.getParent().setRight(c);
         } else if (n.isLeftChild()) {
@@ -266,9 +265,9 @@ public class RedBlackTree {
         }
     }
     
-    public Node search(Integer value) {
+    public Node<T> search(T value) {
         int comp;
-        Node where = root;
+        Node<T> where = root;
         
         while (!where.isLeaf()) {
             comp = value.compareTo(where.getValue());
@@ -288,31 +287,22 @@ public class RedBlackTree {
         return root.size();
     }
     
-    public Integer[] toArray() {
-        return toArray(root);
+    public ArrayList<T> toArrayList() {
+        return toArrayList(root);
     }
     
-    private Integer[] toArray(Node n) {
-        ArrayList<Integer> list = new ArrayList<>();
-        Integer[] array;
-        Iterator<Integer> iter;
+    private ArrayList<T> toArrayList(Node<T> n) {
+        ArrayList<T> list = new ArrayList<>();
 
         if (!n.isLeaf()) {
             if (!n.getLeft().isLeaf())
-                list.addAll(Arrays.asList(toArray(n.getLeft())));
+                list.addAll(toArrayList(n.getLeft()));
             list.add(n.getValue());
             if (!n.getRight().isLeaf())
-                list.addAll(Arrays.asList(toArray(n.getRight())));
+                list.addAll(toArrayList(n.getRight()));
         }
         
-        array = new Integer[list.size()];
-        iter = list.iterator();
-        
-        for (int i = 0; i < list.size(); i++) {
-            array[i] = iter.next();
-        }
-        
-        return array;
+        return list;
     }
     
     // Return true if the tree's structure obeys the red-black rules and all
@@ -325,8 +315,8 @@ public class RedBlackTree {
     
     // Returns -1 if tree is corrupt, otherwise returns the number of black
     // nodes in the path from n to any of its descendant leaves (inclusive).
-    private int verify(Node n) {
-        Node l, r;
+    private int verify(Node<T> n) {
+        Node<T> l, r;
         int lBlacks, rBlacks;
         
         if (n.isLeaf()) return n.isBlack() ? 1 : -1; // Rule 3
@@ -365,7 +355,7 @@ public class RedBlackTree {
         return "Tree " + toString(root, "", "     ");
     }
     
-    public String toString(Node n, String prefix1, String prefix2) {
+    public String toString(Node<T> n, String prefix1, String prefix2) {
         String output;
         String nodeStr;
         String spacing;

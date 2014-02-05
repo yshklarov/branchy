@@ -3,20 +3,25 @@ package com.yakovshklarov.branchy;
 import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TestBranchy {
     public static void main (String[] args) {
         System.out.println("Testing branchy....");
-
         System.out.print("Creating a new tree. ");
         
-        List<Integer> contents = new ArrayList<Integer>();
-        for (int i = 1; i <= 20; i++) {
-            contents.add(i);
-        }
+        String[] strArr = new String[] {"aardvark", "barn owl", "cheetah",
+                                        "dingo", "earwig", "falcon", "gerbil",
+                                        "heron", "jaguar", "koala", "loris",
+                                        "manatee", "narwhal", "opossum",
+                                        "pelican", "quail", "raccoon", "shrew",
+                                        "trout", "uakari", "viper", "walrus",
+                                        "x-ray tetra", "yak", "zebra"};
+        List<String> contents = Arrays.asList(strArr);
         Collections.shuffle(contents);
         
-        RedBlackTree testTree = new RedBlackTree(contents.toArray(new Integer[0]));
+        RedBlackTree<String> testTree = new RedBlackTree<>
+            (contents.toArray(new String[0]));
         System.out.println("Displaying the tree: ");
         System.out.println(testTree);
         
@@ -25,15 +30,16 @@ public class TestBranchy {
         if (size != 1) System.out.printf("s");
         System.out.println(".");
         
-        System.out.printf("Converting to array. Array has %d elements.\n",
-                         testTree.toArray().length);
+        System.out.printf("Converting to ArrayList. ArrayList has %d elements:\n",
+                          testTree.toArrayList().size());
+        System.out.println(testTree.toArrayList());
         
         Collections.shuffle(contents);
-        Integer[] toRemove = contents.toArray(new Integer[0]);
+        String[] toRemove = contents.toArray(new String[0]);
         
-        for (Integer n: toRemove) {
+        for (String n: toRemove) {
             System.out.println("Removing " + n + ": ");
-            Node nNode = testTree.search(n);
+            Node<String> nNode = testTree.search(n);
             if (nNode == null)
                 System.err.println("ERROR: " + n + " is not in the tree!");
             else

@@ -10,6 +10,12 @@ To test:
 
     $ java -jar dist/lib/branchy-<date>.jar
 
-# Example
+# Examples
+
+Integers:
 
 ![example red-black tree](img/example.png)
+
+Strings:
+
+![example red-black tree with strings](img/example-str.png)
